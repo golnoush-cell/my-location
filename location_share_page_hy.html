@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="hy" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#172554">
+<title>Իմ գտնվելու վայրը</title>
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:20px;background:linear-gradient(145deg,#0f172a,#1e3a8a);font-family:Arial,"Noto Sans Armenian",sans-serif;color:#172033}
+main{width:min(100%,440px);background:#fff;border-radius:24px;padding:26px;box-shadow:0 20px 60px #0005;text-align:center}
+h1{font-size:23px;margin:0 0 10px;color:#172554}.sub{color:#64748b;font-size:12px;line-height:1.5;margin:0 0 14px}
+.number{background:#f1f5f9;padding:12px;border-radius:12px;direction:ltr;font-weight:bold;margin-bottom:18px}
+button,.send{width:100%;border:0;border-radius:14px;padding:15px 16px;font-size:16px;font-weight:bold;cursor:pointer;text-decoration:none;display:flex;justify-content:center;align-items:center;gap:10px}
+#allow{background:#1d4ed8;color:white}.send{margin-top:12px;color:white}.wa{background:#15803d}.sms{background:#334155}
+button:disabled{opacity:.6;cursor:wait}
+#status{margin:16px 0 0;padding:12px;border-radius:12px;background:#f1f5f9;color:#475569;font-size:14px;line-height:1.8}
+#choices{display:none;margin-top:18px}.hint{font-size:12px;color:#64748b;line-height:1.8;margin-top:16px}.credit{font-size:12px;color:#94a3b8;margin:18px 0 0;text-align:center}
+</style>
+</head>
+<body>
+<main>
+<h1>📍 Իմ գտնվելու վայրը</h1>
+<p class="sub">Թույլատրե՞լ մուտքը ձեր տեղադրությանը։</p>
+<div class="number">+37493450164</div>
+<button id="allow">Թույլատրել մուտքը և շարունակել</button>
+<div id="status" role="status">Թույլատրեք տեղադրության հասանելիությունը։</div>
+<section id="choices">
+<a id="whatsapp" class="send wa" href="#" target="_blank" rel="noopener">Ուղարկել WhatsApp-ով</a>
+<a id="sms" class="send sms" href="#">Ուղարկել SMS-ով</a>
+</section>
+<p class="hint">Հաղորդագրությունն ուղարկելուց առաջ կարող եք ստուգել այն։ Ուղարկումը հաստատում եք դուք։</p>
+<p class="credit">Ստեղծող՝ <strong>Golnoush</strong></p>
+</main>
+<script>
+const recipient = "37493450164";
+const allowButton = document.getElementById("allow");
+const statusBox = document.getElementById("status");
+const choices = document.getElementById("choices");
+allowButton.addEventListener("click", () => {
+  choices.style.display = "none";
+  if (!window.isSecureContext) {
+    statusBox.textContent = "Տեղադրության հասանելիության համար անհրաժեշտ է HTTPS անվտանգ կապ։";
+    return;
+  }
+  if (!navigator.geolocation) {
+    statusBox.textContent = "Ձեր դիտարկիչը չի աջակցում տեղադրության որոշմանը։";
+    return;
+  }
+  allowButton.disabled = true;
+  statusBox.textContent = "Սպասում ենք տեղադրության թույլտվությանը…";
+  navigator.geolocation.getCurrentPosition(
+    position => {
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
+      const mapUrl = `https://maps.google.com/?q=${lat},${lon}`;
+      const message = `Իմ ընթացիկ գտնվելու վայրը՝\n${mapUrl}`;
+      document.getElementById("whatsapp").href =
+        `https://wa.me/${recipient}?text=${encodeURIComponent(message)}`;
+      document.getElementById("sms").href =
+        `sms:+${recipient}?body=${encodeURIComponent(message)}`;
+      statusBox.textContent = "Տեղադրությունը ստացվեց։ Ընտրեք ուղարկելու եղանակը։";
+      choices.style.display = "block";
+      allowButton.disabled = false;
+    },
+    error => {
+      const messages = {
+        1: "Դուք մերժել եք տեղադրության թույլտվությունը։ Թույլատրեք այն դիտարկչի կարգավորումներում։",
+        2: "Տեղադրությունն այժմ հասանելի չէ։ Ստուգեք GPS-ը և կրկին փորձեք։",
+        3: "Տեղադրության որոշումը չափազանց երկար տևեց։ Կրկին փորձեք։"
+      };
+      statusBox.textContent = messages[error.code] || "Չհաջողվեց ստանալ տեղադրությունը։ Կրկին փորձեք։";
+      allowButton.disabled = false;
+    },
+    {enableHighAccuracy:true, timeout:25000, maximumAge:0}
+  );
+});
+</script>
+</body>
+</html>
